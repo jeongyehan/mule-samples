@@ -1,0 +1,5 @@
+http:
+  port: "8081"
+
+encrypt:
+  text: "![c72bREVng+8ns4IMHA/S2Q==]"

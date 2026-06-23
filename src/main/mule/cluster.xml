@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+		http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+		http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+
+	<flow name="clusterHeartbeatFlow" doc:id="a1b2c3d4-0001-0001-0001-000000000002">
+		<scheduler doc:name="Scheduler" doc:id="a1b2c3d4-0001-0001-0001-000000000003">
+			<scheduling-strategy>
+				<fixed-frequency frequency="1" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</scheduler>
+		<os:store key='heartbeat' objectStore="clusterStore"
+			doc:name="Store heartbeat" doc:id="a1b2c3d4-0001-0001-0001-000000000004">
+			<os:value><![CDATA[#[{ node: server.host, timestamp: now() as String }]]]></os:value>
+		</os:store>
+		<logger level="INFO" doc:name="Log heartbeat" doc:id="a1b2c3d4-0001-0001-0001-000000000005"
+			message='#["[Cluster] Heartbeat stored — node: " ++ server.host]' />
+	</flow>
+	<flow name="clusterFlow" doc:id="786e7856-7a32-4e4a-b078-3baff1ddcfcf">
+		<http:listener doc:name="GET /cluster" doc:id="eb84e176-3285-4503-94a0-69ab380bc49a"
+			config-ref="apiHTTPListenerConfig" path="/cluster" allowedMethods="GET"/>
+		<os:retrieve key='heartbeat' objectStore="clusterStore"
+			doc:name="Retrieve my heartbeat" doc:id="a1b2c3d4-0001-0001-0001-000000000006"
+			target="myHeartbeat">
+			<os:default-value><![CDATA[#[{ node: server.host, timestamp: "no heartbeat yet — wait up to a minute" }]]]></os:default-value>
+		</os:retrieve>
+		<ee:transform doc:name="Build response" doc:id="a1b2c3d4-0001-0001-0001-000000000007">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    currentNode: server.host,
+    heartbeat: vars.myHeartbeat,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log response" doc:id="d7e6f17c-8d56-41af-a06e-f945d95bac2d" message="#[payload]"/>
+	</flow>
+
+</mule>

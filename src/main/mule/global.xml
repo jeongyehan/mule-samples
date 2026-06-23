@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="403a61f9-983b-4c60-bb78-57f40a479bc1" file="properties.yaml" />
+	<http:listener-config name="apiHTTPListenerConfig" doc:name="HTTP Listener config" doc:id="388d7444-7663-4826-8e39-20551e32bbee" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<os:object-store name="clusterStore" doc:name="Cluster Store" doc:id="088bedc8-f997-4c25-8068-744aa3f80fc2" persistent="true" />	
+	<secure-properties:config name="securePropertiesConfig" doc:name="Secure Properties Config" doc:id="eb7c90e4-5839-4626-a1b6-c85b1b940614" file="secure-properties.yaml" key="secure12345" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+</mule>

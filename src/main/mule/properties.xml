@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="propertiesFlow" doc:id="535457b7-1d48-4cb5-8cd7-0fecbc4bbc34" >
+		<http:listener doc:name="GET /properties" doc:id="4893a483-5d3b-4da0-a7d3-981a1fa8385d" config-ref="apiHTTPListenerConfig" path="/properties" allowedMethods="GET"/>
+		<set-variable value="${encrypt.text}" doc:name="plain" doc:id="a8856ea8-9682-48bc-83ae-5cc02c460188" variableName="plain"/>
+		<set-variable value="${secure::encrypt.value}" doc:name="secure" doc:id="f32d8c45-5f8a-4059-a05c-ac2b70780fb7" variableName="secure"/>
+		<ee:transform doc:name="Transform Message" doc:id="38f84515-65ba-417a-a5f1-74abd58f5aef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"property": vars.plain,
+	"secureProperty": vars.secure
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="payload" doc:id="09c28c29-6af7-4a7c-8e77-e127bb0938f7" message="#[payload]"/>
+	</flow>
+</mule>
