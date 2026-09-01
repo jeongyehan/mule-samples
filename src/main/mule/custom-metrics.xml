@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:custom-metrics="http://www.mulesoft.org/schema/mule/custom-metrics" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/custom-metrics http://www.mulesoft.org/schema/mule/custom-metrics/current/mule-custom-metrics.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<flow name="jpy-krw-exchange-rate-metric-flow" doc:name="JPY/KRW Exchange Rate Metric Flow" doc:id="31a7b1d7-669e-4558-82b0-f26d9aa24308">
+
+		<set-variable variableName="exchangeRate"
+			value="#[800 + floor(random() * 701)]"
+			doc:name="Set Random Exchange Rate (800~1500)" />
+
+		<custom-metrics:send doc:name="Send JPY/KRW Exchange Rate" metricName="JPY/KRW Exchange Rate">
+			<custom-metrics:dimensions>
+				<custom-metrics:dimension dimensionName="currency_pair" value="JPY/KRW" />
+			</custom-metrics:dimensions>
+			<custom-metrics:facts>
+				<custom-metrics:fact factName="jpy_krw_exchange_rate" value="#[vars.exchangeRate]" />
+			</custom-metrics:facts>
+		</custom-metrics:send>
+		<logger level="INFO"
+			message="#['[Custom Metrics] JPY/KRW レートアップデート: ' ++ (vars.exchangeRate as String) ++ ' ウォン/100円']"
+			doc:name="Log Exchange Rate" />
+	</flow>
+	<flow name="run-metric-by-schedule" doc:id="3a2c65dd-841c-4f68-a1db-5ccf8671ea44" >
+		<scheduler doc:name="Hourly Scheduler">
+			<scheduling-strategy>
+				<fixed-frequency frequency="1" timeUnit="HOURS" />
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="jpy-krw-exchange-rate-metric-flow" doc:id="5594abf1-5d3d-40bb-ad39-1ffff06e7621" name="jpy-krw-exchange-rate-metric-flow"/>
+	</flow>
+	<flow name="custom-metricsFlow" doc:id="c08b5f40-bb72-45f8-9a93-492aedcb5f63" >
+		<http:listener doc:name="GET /custom-metrics" doc:id="0f68d920-98ea-4fc0-9247-0859b1eea56e" config-ref="apiHTTPListenerConfig" path="/custom-metrics" allowedMethods="GET"/>
+		<flow-ref doc:name="jpy-krw-exchange-rate-metric-flow" doc:id="51e1e54f-4e58-4c33-bcc2-32d5ba6819ed" name="jpy-krw-exchange-rate-metric-flow"/>
+		<set-payload value="#[output application/json --- vars.exchangeRate]" doc:name="Set Payload" doc:id="3e13c8d1-c0f0-4132-aadf-df42335033f0" />
+	</flow>
+
+</mule>
