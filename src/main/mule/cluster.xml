@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	<flow name="clusterHeartbeatFlow" doc:id="a1b2c3d4-0001-0001-0001-000000000002">
 		<scheduler doc:name="Scheduler" doc:id="a1b2c3d4-0001-0001-0001-000000000003">
 			<scheduling-strategy>
-				<fixed-frequency frequency="1" timeUnit="MINUTES" />
+				<fixed-frequency frequency="3600" timeUnit="DAYS" />
 			</scheduling-strategy>
 		</scheduler>
 		<os:store key='heartbeat' objectStore="clusterStore"
