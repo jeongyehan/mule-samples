@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="vmqueue-clusteringFlow" doc:id="fa371c25-b71c-4daf-a8ce-4b1cb1c0601a" >
+		<http:listener doc:name="GET /vmqcl" doc:id="5d97ea30-beb9-4a06-abc2-ee5ea3cd08b9" config-ref="apiHTTPListenerConfig" path="/vmqcl">
+			<http:response statusCode="#[vars.httpStatus default 200]" />
+		</http:listener>
+		<vm:publish doc:name="Publish" doc:id="d5155503-3830-433f-9122-8a28e95b25a4" config-ref="VM_Config" queueName="clusturing_queue"/>
+		<ee:transform doc:name="Transform Message" doc:id="c0bd3c8f-d960-459f-85db-a587e0182db3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Your request is accepted"
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+202]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	<flow name="vmqueue-clusteringFlow1" doc:id="e0283d4c-0b85-460f-9e39-b0ea711ca981" >
+		<vm:listener doc:name="Listener" doc:id="32350d9f-8390-4921-af35-a09eccc3ced8" config-ref="VM_Config" queueName="clusturing_queue"/>
+		<ee:transform doc:name="tm1" doc:id="2507986a-075c-47db-b73a-c7b2852708f8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"node1": server.host
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish doc:name="Publish" doc:id="3927fc9f-5213-402e-8e5b-5d6a6b3d2a51" config-ref="VM_Config" queueName="clusturing_queue_process1"/>
+	</flow>
+	<flow name="vmqueue-clusteringFlow2" doc:id="43c8a28d-2fac-4e59-9dfd-2f43e6427cc9" >
+		<vm:listener queueName="clusturing_queue_process1" doc:name="Listener" doc:id="014a9a14-8d88-48e1-b526-2241a12bd4ab" config-ref="VM_Config" />
+		<ee:transform doc:name="tm2" doc:id="32d11e9d-d073-4083-b555-f22ae4651477">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {
+	"node2": server.host
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="clusturing_queue_process2" doc:name="Publish" doc:id="dc2a653a-d395-4fb1-b30c-abf97f55d577" config-ref="VM_Config" />
+	</flow>
+	<flow name="vmqueue-clusteringFlow3" doc:id="f77fd892-4aa4-48e9-9e6e-9f62e8958b84" >
+		<vm:listener queueName="clusturing_queue_process2" doc:name="Listener" doc:id="8d6cc134-aa36-4229-864a-a4c68b9fc489" config-ref="VM_Config" />
+		<ee:transform doc:name="tm3" doc:id="3dc475a7-cedc-482b-96dd-77cfd72e2628">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {
+	"node3": server.host
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="clusturing_queue_process3" doc:name="Publish" doc:id="5bb29198-3d5d-466c-a175-91ebba34872d" config-ref="VM_Config" />
+	</flow>
+	<flow name="vmqueue-clusteringFlow4" doc:id="ce35935b-53f2-44e4-ad42-043c77d2ff54" >
+		<vm:listener queueName="clusturing_queue_process3" doc:name="Listener" doc:id="21d0e5d2-0a42-485c-9a87-1ee1af8a3a7e" config-ref="VM_Config" />
+		<ee:transform doc:name="tm4" doc:id="b8680dac-c1ae-4374-ba1c-62de72c484f8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {
+	"node4": server.host
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="clusturing_queue_process4" doc:name="Publish" doc:id="4b9d7949-0232-40d9-a682-0aa313c04ba4" config-ref="VM_Config" />
+	</flow>
+	<flow name="vmqueue-clusteringFlow5" doc:id="c13fc6d8-fe53-4447-8ace-103f280c8060" >
+		<vm:listener queueName="clusturing_queue_process4" doc:name="Listener" doc:id="359be090-e86a-4ae7-b02a-0faeb54faa08" config-ref="VM_Config" />
+		<ee:transform doc:name="tm5" doc:id="975a1d97-273d-4d0b-99e7-d40095246269">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ++ {
+	"node5": server.host
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<vm:publish queueName="clusturing_queue_process5" doc:name="Publish" doc:id="bb1ad79f-40f5-42e6-87f4-ce76412fb64e" config-ref="VM_Config" />
+	</flow>
+	<flow name="vmqueue-send-slack" doc:id="9a5ddf91-0055-4250-83c2-af80e438b257" >
+		<vm:listener queueName="clusturing_queue_process5" doc:name="Listener" doc:id="db757e54-0540-4f21-9c97-614c87a29f4c" config-ref="VM_Config" />
+		<ee:transform doc:name="Build Slack Message" doc:id="b1c2d3e4-f5a6-7890-bcde-f12345678901">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"text": "*[VM Queue Clustering Test Result]*\n" ++ (payload pluck ((v, k) -> "• " ++ k ++ ": `" ++ v ++ "`") joinBy "\n")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request doc:name="Send to Slack Webhook" doc:id="c2d3e4f5-a6b7-8901-cdef-123456789012" method="POST" config-ref="slackWebhookConfig" path="${slack.webhook.path}">
+			<http:headers><![CDATA[#[{"Content-Type": "application/json"}]]]></http:headers>
+		</http:request>
+	</flow>
+</mule>

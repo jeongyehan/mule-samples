@@ -14,4 +14,17 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<secure-properties:config name="securePropertiesConfig" doc:name="Secure Properties Config" doc:id="eb7c90e4-5839-4626-a1b6-c85b1b940614" file="secure-properties.yaml" key="secure12345" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
+	<http:request-config name="slackWebhookConfig" doc:name="Slack Webhook Config" doc:id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" >
+		<http:request-connection protocol="HTTPS" host="hooks.slack.com" port="443" />
+	</http:request-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="cdbece7c-1619-41ad-b31d-182f1221d083" >
+		<vm:queues >
+			<vm:queue queueName="clusturing_queue" />
+			<vm:queue queueName="clusturing_queue_process1" />
+			<vm:queue queueName="clusturing_queue_process2" />
+			<vm:queue queueName="clusturing_queue_process3" />
+			<vm:queue queueName="clusturing_queue_process4" />
+			<vm:queue queueName="clusturing_queue_process5" />
+		</vm:queues>
+	</vm:config>
 </mule>

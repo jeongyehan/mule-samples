@@ -3,3 +3,7 @@ http:
 
 encrypt:
   text: "![c72bREVng+8ns4IMHA/S2Q==]"
+
+slack:
+  webhook:
+    path: "services/YOUR_WEBHOOK_URL"
